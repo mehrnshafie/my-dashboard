@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OPO Social Hub</title>
+  <style>
+    :root {
+      --navy:    #0f1630;
+      --navy2:   #1a2347;
+      --gold:    #f0a500;
+      --gold2:   #fbbf24;
+      --teal:    #0d9488;
+      --teal2:   #14b8a6;
+      --bg:      #f1f4f9;
+      --white:   #ffffff;
+      --text:    #1e2a45;
+      --muted:   #6b7a9b;
+      --border:  #e2e8f4;
+      --green:   #10b981;
+      --red:     #ef4444;
+      --radius:  12px;
+      --shadow:  0 2px 16px rgba(15,22,48,.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+    }
+
+    /* ── SCREENS ─────────────────────────────────────── */
+    .screen { display: none; }
+    .screen.active { display: flex; }
+
+    /* ── AUTH ────────────────────────────────────────── */
+    #loginScreen, #signupScreen {
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--navy) 0%, #1e3a6e 100%);
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    .auth-card {
+      background: var(--white); border-radius: 20px;
+      padding: 44px 40px; width: 100%; max-width: 420px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.35);
+    }
+    .auth-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
+    .auth-logo-icon {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;
+    }
+    .auth-logo-text { font-size: 20px; font-weight: 700; color: var(--navy); line-height: 1.1; }
+    .auth-logo-sub  { font-size: 11px; color: var(--muted); letter-spacing: .5px; }
+    .auth-title    { font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .auth-subtitle { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+    .field { margin-bottom: 18px; }
+    .field label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 7px; }
+    .field input {
+      width: 100%; padding: 12px 14px;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 14px; color: var(--text); background: #f8fafd; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .field input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(240,165,0,.12); background: var(--white);
+    }
+    .btn-primary {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      color: var(--navy); border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 4px;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(240,165,0,.35); }
+    .btn-primary:active { transform: translateY(0); }
+    .auth-footer { text-align: center; margin-top: 22px; font-size: 13.5px; color: var(--muted); }
+    .auth-footer a { color: var(--gold); font-weight: 600; text-decoration: none; cursor: pointer; }
+    .auth-footer a:hover { text-decoration: underline; }
+    .error-msg {
+      background: #fff1f1; border: 1px solid #fecaca; color: var(--red);
+      border-radius: 8px; padding: 10px 14px; font-size: 13px;
+      margin-bottom: 16px; display: none;
+    }
+
+    /* ── DASHBOARD ───────────────────────────────────── */
+    #dashScreen { min-height: 100vh; flex-direction: row; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px; min-height: 100vh; background: var(--navy);
+      display: flex; flex-direction: column;
+      position: fixed; left: 0; top: 0; bottom: 0; z-index: 100;
+    }
+    .sidebar-logo {
+      padding: 22px 20px 18px; display: flex; align-items: center; gap: 11px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .sidebar-logo-icon {
+      width: 38px; height: 38px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .sidebar-logo-wrap { overflow: hidden; }
+    .sidebar-logo-name { font-size: 16px; font-weight: 700; color: #fff; white-space: nowrap; }
+    .sidebar-logo-tag  { font-size: 10px; color: var(--gold); letter-spacing: .8px; text-transform: uppercase; }
+    .sidebar-section {
+      padding: 14px 12px 6px; font-size: 10px; font-weight: 700;
+      color: rgba(255,255,255,.3); letter-spacing: 1.2px; text-transform: uppercase;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 16px; margin: 2px 8px; border-radius: 9px; cursor: pointer;
+      color: rgba(255,255,255,.55); font-size: 14px; font-weight: 500;
+      transition: background .15s, color .15s; text-decoration: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+    .nav-item.active { background: rgba(240,165,0,.15); color: var(--gold); }
+    .nav-item .nav-icon { font-size: 17px; width: 22px; text-align: center; flex-shrink: 0; }
+    .nav-badge {
+      margin-left: auto; background: var(--red);
+      color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
+    }
+    .sidebar-bottom { margin-top: auto; padding: 14px 12px; border-top: 1px solid rgba(255,255,255,.07); }
+    .sidebar-user {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px; border-radius: 9px; cursor: pointer; transition: background .15s;
+    }
+    .sidebar-user:hover { background: rgba(255,255,255,.07); }
+    .avatar-sm {
+      width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--gold), #e88d00);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: var(--navy);
+    }
+    .sidebar-user-info { overflow: hidden; }
+    .sidebar-user-name { font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sidebar-user-role { font-size: 11px; color: rgba(255,255,255,.4); }
+
+    /* MAIN */
+    .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* HEADER */
+    .header {
+      background: var(--white); padding: 0 28px; height: 64px;
+      display: flex; align-items: center; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 50; gap: 16px;
+    }
+    .header-title { font-size: 19px; font-weight: 700; color: var(--text); flex: 1; }
+    .header-sub   { font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 1px; }
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .icon-btn {
+      width: 38px; height: 38px; border-radius: 9px;
+      background: var(--bg); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 17px; transition: background .15s; position: relative;
+    }
+    .icon-btn:hover { background: #e5e9f2; }
+    .notif-dot {
+      position: absolute; top: 6px; right: 6px; width: 8px; height: 8px;
+      border-radius: 50%; background: var(--red); border: 2px solid var(--white);
+    }
+    .header-avatar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 5px 12px 5px 6px; border-radius: 10px; cursor: pointer;
+      border: 1px solid var(--border); transition: background .15s;
+    }
+    .header-avatar:hover { background: var(--bg); }
+    .avatar-md {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), #e88d00);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: var(--navy);
+    }
+    .header-user-name { font-size: 13.5px; font-weight: 600; color: var(--text); }
+    .header-user-role { font-size: 11px; color: var(--muted); }
+
+    /* CONTENT */
+    .content { padding: 28px; flex: 1; }
+
+    /* ── BRAND SUMMARY STRIP ──────────────────────────── */
+    .brand-strip {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px;
+    }
+    .brand-sum-card {
+      border-radius: var(--radius); padding: 18px 22px;
+      display: flex; align-items: center; gap: 16px;
+      box-shadow: var(--shadow);
+    }
+    .brand-sum-card.opo  { background: linear-gradient(135deg, #0f1630 0%, #1e2f5c 100%); border: 1px solid rgba(240,165,0,.2); }
+    .brand-sum-card.forfx{ background: linear-gradient(135deg, #062b26 0%, #0d4038 100%); border: 1px solid rgba(13,148,136,.25); }
+    .brand-sum-icon {
+      width: 50px; height: 50px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 24px;
+    }
+    .brand-sum-icon.opo  { background: rgba(240,165,0,.18); }
+    .brand-sum-icon.forfx{ background: rgba(13,148,136,.2); }
+    .brand-sum-label { font-size: 11px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; margin-bottom: 4px; }
+    .brand-sum-card.opo  .brand-sum-label { color: var(--gold); }
+    .brand-sum-card.forfx .brand-sum-label { color: var(--teal2); }
+    .brand-sum-name { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 10px; }
+    .brand-sum-stats { display: flex; gap: 20px; }
+    .bss-item {}
+    .bss-val { font-size: 20px; font-weight: 800; color: #fff; line-height: 1; }
+    .bss-lbl { font-size: 10px; color: rgba(255,255,255,.45); margin-top: 2px; letter-spacing: .3px; }
+    .brand-sum-divider { width: 1px; background: rgba(255,255,255,.1); align-self: stretch; margin: 0 4px; }
+
+    /* ── BRAND CHANNEL SECTIONS ──────────────────────── */
+    .brand-section {
+      margin-bottom: 22px; border-radius: var(--radius);
+      border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden;
+    }
+
+    /* brand header bar */
+    .brand-bar {
+      padding: 14px 22px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand-bar.opo {
+      background: linear-gradient(90deg, #0f1630 0%, #1a2a4a 100%);
+      border-bottom: 2px solid var(--gold);
+    }
+    .brand-bar.forfx {
+      background: linear-gradient(90deg, #062b26 0%, #0d3d35 100%);
+      border-bottom: 2px solid var(--teal);
+    }
+    .brand-bar-left { display: flex; align-items: center; gap: 12px; }
+    .brand-bar-icon {
+      width: 36px; height: 36px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .brand-bar.opo  .brand-bar-icon { background: rgba(240,165,0,.18); }
+    .brand-bar.forfx .brand-bar-icon { background: rgba(13,148,136,.2); }
+    .brand-bar-name { font-size: 15px; font-weight: 700; color: #fff; }
+    .brand-bar-sub  { font-size: 11px; color: rgba(255,255,255,.45); margin-top: 1px; }
+    .brand-bar-total { text-align: right; }
+    .brand-bar-total-val { font-size: 22px; font-weight: 800; color: #fff; line-height: 1; }
+    .brand-bar.opo  .brand-bar-total-val { color: var(--gold); }
+    .brand-bar.forfx .brand-bar-total-val { color: var(--teal2); }
+    .brand-bar-total-lbl { font-size: 10px; color: rgba(255,255,255,.4); letter-spacing: .4px; text-transform: uppercase; margin-top: 2px; }
+
+    /* channel cards row */
+    .channel-row {
+      background: var(--white); display: grid; grid-template-columns: repeat(4, 1fr);
+    }
+    .channel-card {
+      padding: 18px 20px; border-right: 1px solid var(--border);
+      transition: background .15s;
+    }
+    .channel-card:last-child { border-right: none; }
+    .channel-card:hover { background: #f8fafd; }
+    .ch-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .ch-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; font-size: 19px;
+    }
+    .ch-icon.ig  { background: #fce4ec; }
+    .ch-icon.yt  { background: #fff3e0; }
+    .ch-icon.tg  { background: #e3f2fd; }
+    .ch-tag {
+      font-size: 10px; font-weight: 700; padding: 3px 8px;
+      border-radius: 20px; letter-spacing: .3px; text-transform: uppercase;
+    }
+    .tag-fa  { background: #fef3c7; color: #78350f; }  /* Persian */
+    .tag-en  { background: #dbeafe; color: #1e40af; }  /* English */
+    .tag-sub { background: #f0fdf4; color: #166534; }  /* general/single */
+    .ch-count { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1; margin-bottom: 5px; }
+    .ch-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .ch-handle { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .ch-bar-wrap { margin-top: 12px; height: 3px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+    .ch-bar { height: 100%; border-radius: 3px; }
+    .ch-bar.ig  { background: linear-gradient(90deg, #e91e63, #9c27b0); }
+    .ch-bar.yt  { background: #f44336; }
+    .ch-bar.tg  { background: #1976d2; }
+
+    /* ── LOWER GRID ───────────────────────────────────── */
+    .lower-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 22px; }
+    .card {
+      background: var(--white); border-radius: var(--radius);
+      box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden;
+    }
+    .card-header {
+      padding: 18px 20px 14px; display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title { font-size: 15px; font-weight: 700; color: var(--text); }
+    .card-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .card-link  { font-size: 12.5px; font-weight: 600; color: var(--gold); cursor: pointer; }
+    .card-link:hover { text-decoration: underline; }
+    .card-body  { padding: 16px 20px; }
+
+    /* SCHEDULED POSTS */
+    .post-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
+    }
+    .post-item:last-child { border-bottom: none; }
+    .post-badge {
+      padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;
+      flex-shrink: 0; margin-top: 1px; text-transform: uppercase; letter-spacing: .3px;
+    }
+    .badge-ig  { background: #fce4ec; color: #c2185b; }
+    .badge-tg  { background: #e3f2fd; color: #1565c0; }
+    .badge-yt  { background: #fff3e0; color: #c62828; }
+    .post-body { flex: 1; }
+    .post-title { font-size: 13.5px; font-weight: 600; color: var(--text); }
+    .post-meta  { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; align-items: center; gap: 6px; }
+    .post-time  { font-size: 12px; font-weight: 600; color: var(--gold); white-space: nowrap; }
+    .post-brand-dot {
+      display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    }
+    .dot-opo   { background: var(--gold); }
+    .dot-forfx { background: var(--teal); }
+
+    /* MESSAGES */
+    .msg-item {
+      display: flex; align-items: flex-start; gap: 11px;
+      padding: 11px 0; border-bottom: 1px solid var(--border); cursor: pointer;
+    }
+    .msg-item:last-child { border-bottom: none; }
+    .msg-avatar {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: #fff;
+    }
+    .msg-info { flex: 1; min-width: 0; }
+    .msg-top { display: flex; align-items: center; justify-content: space-between; }
+    .msg-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .msg-time { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+    .msg-preview { font-size: 12px; color: var(--muted); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .msg-tags { display: flex; gap: 5px; margin-top: 4px; }
+    .msg-tag { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 5px; }
+    .src-ig  { background: #fce4ec; color: #c2185b; }
+    .src-tg  { background: #e3f2fd; color: #1565c0; }
+    .src-yt  { background: #fff3e0; color: #c62828; }
+    .src-opo   { background: #fef3c7; color: #78350f; }
+    .src-forfx { background: #ccfbf1; color: #0f766e; }
+    .unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; margin-top: 5px; }
+
+    /* ENGAGEMENT */
+    .engage-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .engage-box {
+      background: var(--bg); border-radius: 10px; padding: 15px;
+      border: 1px solid var(--border);
+    }
+    .engage-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .engage-value { font-size: 22px; font-weight: 800; color: var(--text); }
+    .engage-delta { font-size: 12px; font-weight: 600; margin-top: 2px; }
+    .delta-up   { color: var(--green); }
+    .delta-down { color: var(--red); }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #c5cde0; border-radius: 4px; }
+
+    /* RESPONSIVE */
+    @media (max-width: 1200px) {
+      .channel-row { grid-template-columns: repeat(2, 1fr); }
+      .channel-card:nth-child(2) { border-right: none; }
+      .channel-card:nth-child(1),
+      .channel-card:nth-child(2) { border-bottom: 1px solid var(--border); }
+    }
+    @media (max-width: 1000px) {
+      .brand-strip { grid-template-columns: 1fr; }
+      .lower-grid  { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .sidebar { width: 60px; }
+      .sidebar-logo-wrap, .nav-item span, .sidebar-user-info, .sidebar-section { display: none; }
+      .nav-badge { display: none; }
+      .main { margin-left: 60px; }
+      .channel-row { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px) {
+      .brand-strip { grid-template-columns: 1fr; }
+      .channel-row { grid-template-columns: 1fr; }
+      .channel-card { border-right: none !important; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════ LOGIN ══════════════════════════ -->
+<div id="loginScreen" class="screen active">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">📡</div>
+      <div>
+        <div class="auth-logo-text">OPO Social Hub</div>
+        <div class="auth-logo-sub">Social Media Command Center</div>
+      </div>
+    </div>
+    <div class="auth-title">Welcome back</div>
+    <div class="auth-subtitle">Sign in to manage your channels</div>
+    <div class="error-msg" id="loginError">Please enter your email and password.</div>
+    <div class="field">
+      <label>Email address</label>
+      <input type="email" id="loginEmail" placeholder="you@opobroker.com" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" />
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Sign In</button>
+    <div class="auth-footer">
+      Don't have an account? <a onclick="showScreen('signupScreen')">Sign Up</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ SIGN UP ════════════════════════ -->
+<div id="signupScreen" class="screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">📡</div>
+      <div>
+        <div class="auth-logo-text">OPO Social Hub</div>
+        <div class="auth-logo-sub">Social Media Command Center</div>
+      </div>
+    </div>
+    <div class="auth-title">Create account</div>
+    <div class="auth-subtitle">Join the OPO social media team</div>
+    <div class="error-msg" id="signupError">Please fill in all fields.</div>
+    <div class="field">
+      <label>Full name</label>
+      <input type="text" id="signupName" placeholder="Your full name" />
+    </div>
+    <div class="field">
+      <label>Email address</label>
+      <input type="email" id="signupEmail" placeholder="you@opobroker.com" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="signupPass" placeholder="Create a password" />
+    </div>
+    <div class="field">
+      <label>Confirm password</label>
+      <input type="password" id="signupPass2" placeholder="Repeat your password" />
+    </div>
+    <button class="btn-primary" onclick="doSignup()">Create Account</button>
+    <div class="auth-footer">
+      Already have an account? <a onclick="showScreen('loginScreen')">Sign In</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ DASHBOARD ══════════════════════ -->
+<div id="dashScreen" class="screen">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">📡</div>
+      <div class="sidebar-logo-wrap">
+        <div class="sidebar-logo-name">OPO Social Hub</div>
+        <div class="sidebar-logo-tag">Social Command Center</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">Main</div>
+    <a class="nav-item active" onclick="setNav(this)">
+      <span class="nav-icon">🏠</span><span>Overview</span>
+    </a>
+    <a class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">📅</span><span>Content Calendar</span>
+    </a>
+    <a class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">📊</span><span>Analytics</span>
+    </a>
+    <a class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">💬</span><span>Messages</span>
+      <span class="nav-badge">7</span>
+    </a>
+
+    <div class="sidebar-section">Content</div>
+    <a class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">🖼️</span><span>Posts Library</span>
+    </a>
+    <a class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">🎬</span><span>Videos</span>
+    </a>
+    <a class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">📢</span><span>Campaigns</span>
+    </a>
+
+    <div class="sidebar-section">Brands</div>
+    <a class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">🏦</span><span>OPO Broker</span>
+    </a>
+    <a class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">📈</span><span>ForFX Prop</span>
+    </a>
+
+    <div class="sidebar-section">Admin</div>
+    <a class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">📋</span><span>Reports</span>
+    </a>
+    <a class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">⚙️</span><span>Settings</span>
+    </a>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-user">
+        <div class="avatar-sm" id="sidebarInitial">O</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarName">User</div>
+          <div class="sidebar-user-role">Social Media Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER -->
+    <header class="header">
+      <div>
+        <div class="header-title">Dashboard Overview</div>
+        <div class="header-sub">Tuesday, 8 April 2026 — Good morning!</div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" title="Search">🔍</button>
+        <button class="icon-btn" title="Notifications">
+          🔔<div class="notif-dot"></div>
+        </button>
+        <div class="header-avatar">
+          <div class="avatar-md" id="headerInitial">O</div>
+          <div>
+            <div class="header-user-name" id="headerName">User</div>
+            <div class="header-user-role">Social Media Admin</div>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="doLogout()" title="Sign out" style="font-size:15px;">🚪</button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ── BRAND SUMMARY STRIP ─────────────────────────── -->
+      <div class="brand-strip">
+
+        <!-- OPO Broker -->
+        <div class="brand-sum-card opo">
+          <div class="brand-sum-icon opo">🏦</div>
+          <div style="flex:1">
+            <div class="brand-sum-label">OPO Broker</div>
+            <div class="brand-sum-name">Forex Brokerage</div>
+            <div class="brand-sum-stats">
+              <div class="bss-item">
+                <div class="bss-val">141.3K</div>
+                <div class="bss-lbl">Total Audience</div>
+              </div>
+              <div class="brand-sum-divider"></div>
+              <div class="bss-item">
+                <div class="bss-val">4</div>
+                <div class="bss-lbl">Channels</div>
+              </div>
+              <div class="brand-sum-divider"></div>
+              <div class="bss-item">
+                <div class="bss-val">3</div>
+                <div class="bss-lbl">Platforms</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ForFX Prop -->
+        <div class="brand-sum-card forfx">
+          <div class="brand-sum-icon forfx">📈</div>
+          <div style="flex:1">
+            <div class="brand-sum-label">ForFX Prop Firm</div>
+            <div class="brand-sum-name">Funded Trading</div>
+            <div class="brand-sum-stats">
+              <div class="bss-item">
+                <div class="bss-val">125.6K</div>
+                <div class="bss-lbl">Total Audience</div>
+              </div>
+              <div class="brand-sum-divider"></div>
+              <div class="bss-item">
+                <div class="bss-val">4</div>
+                <div class="bss-lbl">Channels</div>
+              </div>
+              <div class="brand-sum-divider"></div>
+              <div class="bss-item">
+                <div class="bss-val">3</div>
+                <div class="bss-lbl">Platforms</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /brand-strip -->
+
+      <!-- ── OPO BROKER CHANNEL SECTION ─────────────────── -->
+      <div class="brand-section">
+        <div class="brand-bar opo">
+          <div class="brand-bar-left">
+            <div class="brand-bar-icon">🏦</div>
+            <div>
+              <div class="brand-bar-name">OPO Broker</div>
+              <div class="brand-bar-sub">Forex Brokerage · 4 active channels</div>
+            </div>
+          </div>
+          <div class="brand-bar-total">
+            <div class="brand-bar-total-val">141.3K</div>
+            <div class="brand-bar-total-lbl">Total Audience</div>
+          </div>
+        </div>
+        <div class="channel-row">
+
+          <!-- IG Persian -->
+          <div class="channel-card">
+            <div class="ch-top">
+              <div class="ch-icon ig">📸</div>
+              <span class="ch-tag tag-fa">Persian</span>
+            </div>
+            <div class="ch-count">68K</div>
+            <div class="ch-label">Instagram</div>
+            <div class="ch-handle">Followers</div>
+            <div class="ch-bar-wrap"><div class="ch-bar ig" style="width:100%"></div></div>
+          </div>
+
+          <!-- IG English -->
+          <div class="channel-card">
+            <div class="ch-top">
+              <div class="ch-icon ig">📸</div>
+              <span class="ch-tag tag-en">English</span>
+            </div>
+            <div class="ch-count">28K</div>
+            <div class="ch-label">Instagram</div>
+            <div class="ch-handle">Followers</div>
+            <div class="ch-bar-wrap"><div class="ch-bar ig" style="width:41%"></div></div>
+          </div>
+
+          <!-- YouTube -->
+          <div class="channel-card">
+            <div class="ch-top">
+              <div class="ch-icon yt">▶️</div>
+              <span class="ch-tag tag-sub">Global</span>
+            </div>
+            <div class="ch-count">15.3K</div>
+            <div class="ch-label">YouTube</div>
+            <div class="ch-handle">Subscribers</div>
+            <div class="ch-bar-wrap"><div class="ch-bar yt" style="width:22%"></div></div>
+          </div>
+
+          <!-- Telegram -->
+          <div class="channel-card">
+            <div class="ch-top">
+              <div class="ch-icon tg">✈️</div>
+              <span class="ch-tag tag-sub">Global</span>
+            </div>
+            <div class="ch-count">30K</div>
+            <div class="ch-label">Telegram</div>
+            <div class="ch-handle">Members</div>
+            <div class="ch-bar-wrap"><div class="ch-bar tg" style="width:44%"></div></div>
+          </div>
+
+        </div><!-- /channel-row -->
+      </div><!-- /brand-section OPO -->
+
+      <!-- ── FORFX PROP CHANNEL SECTION ─────────────────── -->
+      <div class="brand-section">
+        <div class="brand-bar forfx">
+          <div class="brand-bar-left">
+            <div class="brand-bar-icon">📈</div>
+            <div>
+              <div class="brand-bar-name">ForFX Prop Firm</div>
+              <div class="brand-bar-sub">Funded Trading · 4 active channels</div>
+            </div>
+          </div>
+          <div class="brand-bar-total">
+            <div class="brand-bar-total-val">125.6K</div>
+            <div class="brand-bar-total-lbl">Total Audience</div>
+          </div>
+        </div>
+        <div class="channel-row">
+
+          <!-- IG Persian -->
+          <div class="channel-card">
+            <div class="ch-top">
+              <div class="ch-icon ig">📸</div>
+              <span class="ch-tag tag-fa">Persian</span>
+            </div>
+            <div class="ch-count">66.4K</div>
+            <div class="ch-label">Instagram</div>
+            <div class="ch-handle">Followers</div>
+            <div class="ch-bar-wrap"><div class="ch-bar ig" style="width:100%"></div></div>
+          </div>
+
+          <!-- IG English -->
+          <div class="channel-card">
+            <div class="ch-top">
+              <div class="ch-icon ig">📸</div>
+              <span class="ch-tag tag-en">English</span>
+            </div>
+            <div class="ch-count">13.8K</div>
+            <div class="ch-label">Instagram</div>
+            <div class="ch-handle">@forfxcom · Followers</div>
+            <div class="ch-bar-wrap"><div class="ch-bar ig" style="width:21%"></div></div>
+          </div>
+
+          <!-- YouTube -->
+          <div class="channel-card">
+            <div class="ch-top">
+              <div class="ch-icon yt">▶️</div>
+              <span class="ch-tag tag-sub">Global</span>
+            </div>
+            <div class="ch-count">26.4K</div>
+            <div class="ch-label">YouTube</div>
+            <div class="ch-handle">Subscribers</div>
+            <div class="ch-bar-wrap"><div class="ch-bar yt" style="width:40%"></div></div>
+          </div>
+
+          <!-- Telegram -->
+          <div class="channel-card">
+            <div class="ch-top">
+              <div class="ch-icon tg">✈️</div>
+              <span class="ch-tag tag-sub">Global</span>
+            </div>
+            <div class="ch-count">19K</div>
+            <div class="ch-label">Telegram</div>
+            <div class="ch-handle">Members</div>
+            <div class="ch-bar-wrap"><div class="ch-bar tg" style="width:29%"></div></div>
+          </div>
+
+        </div><!-- /channel-row -->
+      </div><!-- /brand-section ForFX -->
+
+      <!-- ── SCHEDULED POSTS + INBOX ─────────────────────── -->
+      <div class="lower-grid">
+
+        <!-- SCHEDULED POSTS -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Upcoming Scheduled Posts</div>
+              <div class="card-sub">Next 7 days · all platforms &amp; brands</div>
+            </div>
+            <a class="card-link">View calendar →</a>
+          </div>
+          <div class="card-body">
+
+            <div class="post-item">
+              <span class="post-badge badge-ig">IG</span>
+              <div class="post-body">
+                <div class="post-title">Weekly Market Outlook — Apr 8</div>
+                <div class="post-meta">
+                  <span class="post-brand-dot dot-opo"></span> OPO Broker · Persian · Reel + Caption
+                </div>
+              </div>
+              <div class="post-time">Today 12:00</div>
+            </div>
+
+            <div class="post-item">
+              <span class="post-badge badge-tg">TG</span>
+              <div class="post-body">
+                <div class="post-title">ForFX Challenge Promo + Link</div>
+                <div class="post-meta">
+                  <span class="post-brand-dot dot-forfx"></span> ForFX Prop · Text + Banner
+                </div>
+              </div>
+              <div class="post-time">Today 15:00</div>
+            </div>
+
+            <div class="post-item">
+              <span class="post-badge badge-yt">YT</span>
+              <div class="post-body">
+                <div class="post-title">Forex for Beginners — Part 2</div>
+                <div class="post-meta">
+                  <span class="post-brand-dot dot-opo"></span> OPO Broker · Long-form Video
+                </div>
+              </div>
+              <div class="post-time">Wed 10:00</div>
+            </div>
+
+            <div class="post-item">
+              <span class="post-badge badge-ig">IG</span>
+              <div class="post-body">
+                <div class="post-title">Trader Spotlight — Success Story</div>
+                <div class="post-meta">
+                  <span class="post-brand-dot dot-forfx"></span> ForFX Prop · English · @forfxcom Story
+                </div>
+              </div>
+              <div class="post-time">Thu 09:00</div>
+            </div>
+
+            <div class="post-item">
+              <span class="post-badge badge-tg">TG</span>
+              <div class="post-body">
+                <div class="post-title">Gold (XAU/USD) Weekly Signal</div>
+                <div class="post-meta">
+                  <span class="post-brand-dot dot-opo"></span> OPO Broker · Signal Post
+                </div>
+              </div>
+              <div class="post-time">Fri 08:00</div>
+            </div>
+
+            <div class="post-item">
+              <span class="post-badge badge-yt">YT</span>
+              <div class="post-body">
+                <div class="post-title">How Prop Trading Works — Explainer</div>
+                <div class="post-meta">
+                  <span class="post-brand-dot dot-forfx"></span> ForFX Prop · Shorts + Full Video
+                </div>
+              </div>
+              <div class="post-time">Sat 11:00</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- INBOX -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Inbox</div>
+              <div class="card-sub">Recent DMs &amp; comments needing reply</div>
+            </div>
+            <a class="card-link">Open inbox →</a>
+          </div>
+          <div class="card-body">
+
+            <div class="msg-item">
+              <div class="msg-avatar" style="background:#c2185b;">A</div>
+              <div class="msg-info">
+                <div class="msg-top">
+                  <span class="msg-name">Ahmad K.</span>
+                  <span class="msg-time">9:14 AM</span>
+                </div>
+                <div class="msg-preview">How do I open a prop firm account on ForFX?</div>
+                <div class="msg-tags">
+                  <span class="msg-tag src-ig">Instagram</span>
+                  <span class="msg-tag src-forfx">ForFX</span>
+                </div>
+              </div>
+              <div class="unread-dot"></div>
+            </div>
+
+            <div class="msg-item">
+              <div class="msg-avatar" style="background:#1565c0;">S</div>
+              <div class="msg-info">
+                <div class="msg-top">
+                  <span class="msg-name">Sara M.</span>
+                  <span class="msg-time">8:50 AM</span>
+                </div>
+                <div class="msg-preview">Is OPO regulated? I want to start trading…</div>
+                <div class="msg-tags">
+                  <span class="msg-tag src-tg">Telegram</span>
+                  <span class="msg-tag src-opo">OPO</span>
+                </div>
+              </div>
+              <div class="unread-dot"></div>
+            </div>
+
+            <div class="msg-item">
+              <div class="msg-avatar" style="background:#c62828;">J</div>
+              <div class="msg-info">
+                <div class="msg-top">
+                  <span class="msg-name">James T.</span>
+                  <span class="msg-time">7:30 AM</span>
+                </div>
+                <div class="msg-preview">Loved the forex basics video, when is part 2?</div>
+                <div class="msg-tags">
+                  <span class="msg-tag src-yt">YouTube</span>
+                  <span class="msg-tag src-opo">OPO</span>
+                </div>
+              </div>
+              <div class="unread-dot"></div>
+            </div>
+
+            <div class="msg-item">
+              <div class="msg-avatar" style="background:#0d9488;">L</div>
+              <div class="msg-info">
+                <div class="msg-top">
+                  <span class="msg-name">Layla N.</span>
+                  <span class="msg-time">Yesterday</span>
+                </div>
+                <div class="msg-preview">What's the minimum deposit for ForFX challenge?</div>
+                <div class="msg-tags">
+                  <span class="msg-tag src-ig">Instagram</span>
+                  <span class="msg-tag src-forfx">ForFX</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="msg-item">
+              <div class="msg-avatar" style="background:#7c3aed;">M</div>
+              <div class="msg-info">
+                <div class="msg-top">
+                  <span class="msg-name">Mohammed R.</span>
+                  <span class="msg-time">Yesterday</span>
+                </div>
+                <div class="msg-preview">Please pin the trading signals channel link 🙏</div>
+                <div class="msg-tags">
+                  <span class="msg-tag src-tg">Telegram</span>
+                  <span class="msg-tag src-opo">OPO</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /lower-grid -->
+
+      <!-- ── WEEKLY ENGAGEMENT ───────────────────────────── -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Weekly Engagement</div>
+            <div class="card-sub">Apr 1 – Apr 8 · combined across all platforms &amp; brands</div>
+          </div>
+          <a class="card-link">Full report →</a>
+        </div>
+        <div class="card-body">
+          <div class="engage-grid">
+            <div class="engage-box">
+              <div class="engage-label">👁️ Impressions</div>
+              <div class="engage-value">284K</div>
+              <div class="engage-delta delta-up">↑ 18% vs last week</div>
+            </div>
+            <div class="engage-box">
+              <div class="engage-label">❤️ Likes &amp; Reactions</div>
+              <div class="engage-value">14.3K</div>
+              <div class="engage-delta delta-up">↑ 9% vs last week</div>
+            </div>
+            <div class="engage-box">
+              <div class="engage-label">💬 Comments</div>
+              <div class="engage-value">1,842</div>
+              <div class="engage-delta delta-up">↑ 22% vs last week</div>
+            </div>
+            <div class="engage-box">
+              <div class="engage-label">🔁 Shares &amp; Forwards</div>
+              <div class="engage-value">3,617</div>
+              <div class="engage-delta delta-down">↓ 4% vs last week</div>
+            </div>
+            <div class="engage-box">
+              <div class="engage-label">▶️ Video Views</div>
+              <div class="engage-value">52.1K</div>
+              <div class="engage-delta delta-up">↑ 31% vs last week</div>
+            </div>
+            <div class="engage-box">
+              <div class="engage-label">🔗 Link Clicks</div>
+              <div class="engage-value">6,409</div>
+              <div class="engage-delta delta-up">↑ 11% vs last week</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /dashScreen -->
+
+<script>
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function setUserUI(name) {
+    const initial = name.trim().charAt(0).toUpperCase();
+    document.getElementById('headerInitial').textContent  = initial;
+    document.getElementById('sidebarInitial').textContent = initial;
+    document.getElementById('headerName').textContent     = name;
+    document.getElementById('sidebarName').textContent    = name;
+  }
+
+  function doLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass  = document.getElementById('loginPass').value;
+    const err   = document.getElementById('loginError');
+    if (!email || !pass) { err.style.display = 'block'; return; }
+    err.style.display = 'none';
+    const name = email.includes('@')
+      ? email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+      : email;
+    setUserUI(name);
+    showScreen('dashScreen');
+  }
+
+  function doSignup() {
+    const name  = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const pass  = document.getElementById('signupPass').value;
+    const pass2 = document.getElementById('signupPass2').value;
+    const err   = document.getElementById('signupError');
+    if (!name || !email || !pass || !pass2) {
+      err.style.display = 'block'; err.textContent = 'Please fill in all fields.'; return;
+    }
+    if (pass !== pass2) {
+      err.style.display = 'block'; err.textContent = 'Passwords do not match.'; return;
+    }
+    err.style.display = 'none';
+    setUserUI(name);
+    showScreen('dashScreen');
+  }
+
+  function doLogout() {
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPass').value  = '';
+    showScreen('loginScreen');
+  }
+
+  function setNav(el) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (document.getElementById('loginScreen').classList.contains('active'))  doLogin();
+    if (document.getElementById('signupScreen').classList.contains('active')) doSignup();
+  });
+</script>
+</body>
+</html>
