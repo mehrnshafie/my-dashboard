@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int          @id @default(autoincrement())
+  name         String
+  email        String       @unique
+  passwordHash String?      @map("password_hash")
+  role         String?
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  socialPosts  SocialPost[]
+
+  @@map("users")
+}
+
+model Brand {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  channels    Channel[]
+  posts       Post[]
+  socialPosts SocialPost[]
+  campaigns   Campaign[]
+}
+
+model Channel {
+  id         Int      @id @default(autoincrement())
+  platform   Platform
+  handle     String
+  followers  Int      @default(0)
+  brandId    Int
+  brand      Brand    @relation(fields: [brandId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  analytics  Analytics[]
+}
+
+model Post {
+  id          Int        @id @default(autoincrement())
+  title       String
+  content     String?
+  platform    Platform
+  status      PostStatus @default(DRAFT)
+  scheduledAt DateTime?
+  publishedAt DateTime?
+  brandId     Int
+  brand       Brand      @relation(fields: [brandId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model SocialPost {
+  id               Int        @id @default(autoincrement())
+  platform         Platform
+  title            String
+  content          String?
+  mediaUrl         String?    @map("media_url")
+  status           PostStatus @default(DRAFT)
+  scheduledAt      DateTime?  @map("scheduled_at")
+  publishedAt      DateTime?  @map("published_at")
+  followerSnapshot Int?       @map("follower_snapshot")
+  likes            Int        @default(0)
+  comments         Int        @default(0)
+  shares           Int        @default(0)
+  views            Int        @default(0)
+  engagementRate   Float?     @map("engagement_rate")
+  engagementNotes  String?    @map("engagement_notes")
+  brandId          Int        @map("brand_id")
+  brand            Brand      @relation(fields: [brandId], references: [id])
+  createdById      Int?       @map("created_by_id")
+  createdBy        User?      @relation(fields: [createdById], references: [id])
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  @@map("social_posts")
+}
+
+model Campaign {
+  id        Int            @id @default(autoincrement())
+  name      String
+  status    CampaignStatus @default(ACTIVE)
+  reach     Int            @default(0)
+  startDate DateTime
+  endDate   DateTime?
+  brandId   Int
+  brand     Brand          @relation(fields: [brandId], references: [id])
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model Analytics {
+  id          Int      @id @default(autoincrement())
+  channelId   Int
+  channel     Channel  @relation(fields: [channelId], references: [id])
+  followers   Int
+  engagement  Float
+  reach       Int      @default(0)
+  recordedAt  DateTime @default(now())
+}
+
+enum Platform {
+  INSTAGRAM
+  YOUTUBE
+  TELEGRAM
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CampaignStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
