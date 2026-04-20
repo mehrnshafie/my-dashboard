@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
+const authRouter = require('./routes/auth');
 const brandsRouter = require('./routes/brands');
 const postsRouter = require('./routes/posts');
 const analyticsRouter = require('./routes/analytics');
@@ -14,6 +15,7 @@ app.use(express.json());
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
+app.use('/api/auth', authRouter);
 app.use('/api/brands', brandsRouter);
 app.use('/api/posts', postsRouter);
 app.use('/api/analytics', analyticsRouter);

@@ -25,6 +25,8 @@
     if (btn) btn.textContent = saved === 'dark' ? '☀️' : '🌙';
   }
 
+  const API = 'http://localhost:3001';
+
   /* ── SCREENS ────────────────────────────────────────── */
   function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -37,34 +39,85 @@
     ['headerName','sidebarName'].forEach(id => document.getElementById(id).textContent = name);
   }
 
-  function doLogin() {
+  function setLoading(btnId, loading, defaultText) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = loading;
+    btn.textContent = loading ? 'Please wait…' : defaultText;
+  }
+
+  function showError(errEl, msg) {
+    errEl.textContent = '⚠️ ' + msg;
+    errEl.style.display = 'block';
+  }
+
+  async function doLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const pass  = document.getElementById('loginPass').value;
     const err   = document.getElementById('loginError');
-    if (!email || !pass) { err.style.display = 'block'; return; }
     err.style.display = 'none';
-    const name = email.includes('@')
-      ? email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase())
-      : email;
-    setUserUI(name);
-    showScreen('dashScreen');
+
+    if (!email || !pass) { showError(err, 'Please enter your email and password.'); return; }
+
+    setLoading('loginBtn', true, 'Sign In →');
+    try {
+      const res  = await fetch(API + '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pass }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showError(err, data.error || 'Login failed.'); return; }
+      setUserUI(data.name);
+      showScreen('dashScreen');
+    } catch {
+      showError(err, 'Cannot reach the server. Is the backend running?');
+    } finally {
+      setLoading('loginBtn', false, 'Sign In →');
+    }
   }
 
-  function doSignup() {
+  async function doSignup() {
     const name  = document.getElementById('signupName').value.trim();
     const email = document.getElementById('signupEmail').value.trim();
     const pass  = document.getElementById('signupPass').value;
     const pass2 = document.getElementById('signupPass2').value;
-    const err   = document.getElementById('signupError');
-    if (!name || !email || !pass || !pass2) {
-      err.style.display = 'block'; err.textContent = '⚠️ Please fill in all fields.'; return;
+    const role  = document.getElementById('signupRole').value;
+    const err     = document.getElementById('signupError');
+    const success = document.getElementById('signupSuccess');
+    err.style.display = 'none';
+    success.style.display = 'none';
+
+    if (!name || !email || !pass || !pass2 || !role) {
+      showError(err, 'Please fill in all fields.'); return;
     }
     if (pass !== pass2) {
-      err.style.display = 'block'; err.textContent = '⚠️ Passwords do not match.'; return;
+      showError(err, 'Passwords do not match.'); return;
     }
-    err.style.display = 'none';
-    setUserUI(name);
-    showScreen('dashScreen');
+
+    setLoading('signupBtn', true, 'Create Account →');
+    try {
+      const res  = await fetch(API + '/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password: pass, role }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showError(err, data.error || 'Registration failed.'); return; }
+      success.style.display = 'block';
+      setTimeout(() => {
+        success.style.display = 'none';
+        document.getElementById('signupName').value  = '';
+        document.getElementById('signupEmail').value = '';
+        document.getElementById('signupPass').value  = '';
+        document.getElementById('signupPass2').value = '';
+        document.getElementById('signupRole').value  = '';
+        showScreen('loginScreen');
+      }, 2000);
+    } catch {
+      showError(err, 'Cannot reach the server. Is the backend running?');
+    } finally {
+      setLoading('signupBtn', false, 'Create Account →');
+    }
   }
 
   function doLogout() {
