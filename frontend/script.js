@@ -25,6 +25,7 @@
     if (btn) btn.textContent = saved === 'dark' ? '☀️' : '🌙';
   }
 
+  // Backend base URL — change this if your server runs on a different host/port.
   const API = 'http://localhost:3001';
 
   /* ── SCREENS ────────────────────────────────────────── */
