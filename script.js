@@ -128,17 +128,18 @@
 
   /* ── PAGE ROUTING ───────────────────────────────── */
   const PAGE_META = {
-    overview:  ['🏠 Dashboard Overview',      '📆 Tuesday, 8 April 2026 — Good morning!'],
-    analytics: ['📊 Analytics',               'Platform performance & growth metrics'],
-    messages:  ['💬 Messages',                '7 unread messages across all channels'],
-    calendar:  ['📅 Content Calendar',        'Scheduled posts — week of Apr 7–13'],
-    posts:     ['🖼️ Posts Library',           'Published and draft posts across brands'],
-    videos:    ['🎬 Videos',                  'YouTube and Reel content across all channels'],
-    campaigns: ['📢 Campaigns',               'Active and paused marketing campaigns'],
-    opo:       ['🏦 OPO Broker',              'Channel stats and recent activity'],
-    forfx:     ['📈 ForFX Prop',              'Channel stats and recent activity'],
-    reports:   ['📋 Reports',                 'Combined brand performance summary — Apr 2026'],
-    settings:  ['⚙️ Settings',               'Account and dashboard preferences'],
+    overview:    ['🏠 Dashboard Overview',      '📆 Tuesday, 8 April 2026 — Good morning!'],
+    analytics:   ['📊 Analytics',               'Platform performance & growth metrics'],
+    messages:    ['💬 Messages',                '7 unread messages across all channels'],
+    calendar:    ['📅 Content Calendar',        'Scheduled posts — week of Apr 7–13'],
+    socialposts: ['✍️ Social Posts',            'Manage posts across Instagram, YouTube & Telegram'],
+    posts:       ['🖼️ Posts Library',           'Published and draft posts across brands'],
+    videos:      ['🎬 Videos',                  'YouTube and Reel content across all channels'],
+    campaigns:   ['📢 Campaigns',               'Active and paused marketing campaigns'],
+    opo:         ['🏦 OPO Broker',              'Channel stats and recent activity'],
+    forfx:       ['📈 ForFX Prop',              'Channel stats and recent activity'],
+    reports:     ['📋 Reports',                 'Combined brand performance summary — Apr 2026'],
+    settings:    ['⚙️ Settings',               'Account and dashboard preferences'],
   };
 
   function showPage(id) {
@@ -150,6 +151,147 @@
     const subEl   = document.querySelector('.header-sub');
     if (titleEl) titleEl.textContent = meta[0];
     if (subEl)   subEl.textContent   = meta[1];
+    if (id === 'socialposts') loadSocialPosts();
+  }
+
+  /* ── SOCIAL POSTS ─────────────────────────────────── */
+  let spPosts  = [];
+  let spEditId = null;
+
+  function spPlatformBadge(platform) {
+    const map = { INSTAGRAM: ['badge-ig','IG'], YOUTUBE: ['badge-yt','YT'], TELEGRAM: ['badge-tg','TG'] };
+    const [cls, label] = map[platform] || ['', platform];
+    return `<span class="post-badge ${cls}">${label}</span>`;
+  }
+
+  function spStatusBadge(status) {
+    const cls = { DRAFT:'draft', SCHEDULED:'scheduled', PUBLISHED:'published', ARCHIVED:'archived' }[status] || 'draft';
+    return `<span class="sp-status sp-status-${cls}">${status}</span>`;
+  }
+
+  function spFmtDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  }
+
+  function spShowBanner(type, msg) {
+    const el = document.getElementById('sp-banner');
+    el.className = `sp-banner sp-banner-${type}`;
+    el.textContent = (type === 'error' ? '⚠️ ' : '✅ ') + msg;
+    el.style.display = 'block';
+    if (type === 'success') setTimeout(() => { el.style.display = 'none'; }, 3000);
+  }
+
+  async function loadSocialPosts() {
+    const tbody = document.getElementById('sp-tbody');
+    tbody.innerHTML = '<tr><td colspan="6" class="sp-loading">Loading posts…</td></tr>';
+    try {
+      const res = await fetch(API + '/api/social-posts');
+      const { success, data, message } = await res.json();
+      if (!success) { spShowBanner('error', message); tbody.innerHTML = ''; return; }
+      spPosts = data;
+      if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="sp-empty">No posts yet — click <strong>+ Add New</strong> to create one.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(p => `
+        <tr>
+          <td>${spPlatformBadge(p.platform)}</td>
+          <td style="white-space:nowrap;">${p.brand?.name || '—'}</td>
+          <td class="sp-col-title" title="${p.title.replace(/"/g,'&quot;')}">${p.title}</td>
+          <td>${spStatusBadge(p.status)}</td>
+          <td style="white-space:nowrap;font-size:12px;">${spFmtDate(p.scheduledAt)}</td>
+          <td style="white-space:nowrap;">
+            <button class="sp-btn-edit" onclick="spOpenEdit(${p.id})">Edit</button>
+            <button class="sp-btn-del"  onclick="spDelete(${p.id})">Delete</button>
+          </td>
+        </tr>`).join('');
+    } catch {
+      spShowBanner('error', 'Cannot reach the server. Is the backend running?');
+      tbody.innerHTML = '';
+    }
+  }
+
+  function spOpenCreate() {
+    spEditId = null;
+    document.getElementById('sp-modal-title').textContent = '✨ New Social Post';
+    document.getElementById('sp-form').reset();
+    document.getElementById('sp-modal-error').style.display = 'none';
+    document.getElementById('sp-modal-overlay').classList.add('open');
+  }
+
+  function spOpenEdit(id) {
+    const post = spPosts.find(p => p.id === id);
+    if (!post) return;
+    spEditId = id;
+    document.getElementById('sp-modal-title').textContent = '✏️ Edit Post';
+    document.getElementById('sp-modal-error').style.display = 'none';
+    document.getElementById('sp-f-platform').value  = post.platform;
+    document.getElementById('sp-f-brand').value     = post.brandId;
+    document.getElementById('sp-f-title').value     = post.title;
+    document.getElementById('sp-f-content').value   = post.content || '';
+    document.getElementById('sp-f-status').value    = post.status;
+    document.getElementById('sp-f-scheduled').value = post.scheduledAt ? post.scheduledAt.slice(0,16) : '';
+    document.getElementById('sp-modal-overlay').classList.add('open');
+  }
+
+  function spCloseModal() {
+    document.getElementById('sp-modal-overlay').classList.remove('open');
+    spEditId = null;
+  }
+
+  async function spSubmit() {
+    const platform  = document.getElementById('sp-f-platform').value;
+    const brandId   = document.getElementById('sp-f-brand').value;
+    const title     = document.getElementById('sp-f-title').value.trim();
+    const content   = document.getElementById('sp-f-content').value.trim();
+    const status    = document.getElementById('sp-f-status').value;
+    const scheduled = document.getElementById('sp-f-scheduled').value;
+    const errEl     = document.getElementById('sp-modal-error');
+    errEl.style.display = 'none';
+
+    if (!platform) { errEl.textContent = '⚠️ Platform is required'; errEl.style.display = 'block'; return; }
+    if (!brandId)  { errEl.textContent = '⚠️ Brand is required';    errEl.style.display = 'block'; return; }
+    if (!title)    { errEl.textContent = '⚠️ Title is required';    errEl.style.display = 'block'; return; }
+
+    const body = { platform, brandId: Number(brandId), title, content: content || null, status };
+    if (scheduled) body.scheduledAt = new Date(scheduled).toISOString();
+
+    const isEdit = spEditId !== null;
+    const url    = API + '/api/social-posts' + (isEdit ? '/' + spEditId : '');
+    const method = isEdit ? 'PUT' : 'POST';
+
+    const btn = document.getElementById('sp-submit-btn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    try {
+      const res  = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const { success, message } = await res.json();
+      if (!success) { errEl.textContent = '⚠️ ' + message; errEl.style.display = 'block'; return; }
+      spCloseModal();
+      spShowBanner('success', isEdit ? 'Post updated.' : 'Post created.');
+      loadSocialPosts();
+    } catch {
+      errEl.textContent = '⚠️ Cannot reach the server. Is the backend running?';
+      errEl.style.display = 'block';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Save Post';
+    }
+  }
+
+  async function spDelete(id) {
+    const post  = spPosts.find(p => p.id === id);
+    const label = post ? post.title : 'this post';
+    if (!confirm(`Delete "${label}"?\n\nThis cannot be undone.`)) return;
+    try {
+      const res  = await fetch(API + '/api/social-posts/' + id, { method: 'DELETE' });
+      const { success, message } = await res.json();
+      if (!success) { spShowBanner('error', message); return; }
+      spShowBanner('success', 'Post deleted.');
+      loadSocialPosts();
+    } catch {
+      spShowBanner('error', 'Cannot reach the server. Is the backend running?');
+    }
   }
 
   function setNav(el) {

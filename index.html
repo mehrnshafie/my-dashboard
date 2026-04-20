@@ -117,6 +117,9 @@
     </a>
 
     <div class="sidebar-section">Content</div>
+    <a class="nav-item" data-page="socialposts" onclick="setNav(this)">
+      <span class="nav-icon">✍️</span><span>Social Posts</span>
+    </a>
     <a class="nav-item" data-page="posts" onclick="setNav(this)">
       <span class="nav-icon">🖼️</span><span>Posts Library</span>
     </a>
@@ -1566,8 +1569,99 @@
         </div>
       </div><!-- /page-settings -->
 
+      <!-- ══════════════════════════════════════════════════
+           PAGE: SOCIAL POSTS
+      ══════════════════════════════════════════════════ -->
+      <div id="page-socialposts" class="page">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">✍️ Social Posts</div>
+              <div class="card-sub">Manage posts across Instagram, YouTube &amp; Telegram</div>
+            </div>
+            <button class="btn-primary" style="width:auto;padding:10px 20px;margin-top:0;font-size:13px;letter-spacing:0;" onclick="spOpenCreate()">+ Add New</button>
+          </div>
+          <div id="sp-banner" class="sp-banner"></div>
+          <div class="sp-table-wrap card-body" style="padding-top:8px;">
+            <table class="sp-table">
+              <thead>
+                <tr>
+                  <th>Platform</th>
+                  <th>Brand</th>
+                  <th>Title</th>
+                  <th>Status</th>
+                  <th>Scheduled At</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sp-tbody">
+                <tr><td colspan="6" class="sp-loading">Loading posts…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /page-socialposts -->
+
     </div><!-- /content -->
   </div><!-- /main -->
+
+  <!-- ══ SOCIAL POSTS MODAL ══════════════════════════════ -->
+  <div id="sp-modal-overlay" class="sp-modal-overlay" onclick="if(event.target===this)spCloseModal()">
+    <div class="sp-modal">
+      <div class="sp-modal-header">
+        <div id="sp-modal-title" class="sp-modal-title">✨ New Social Post</div>
+        <button class="sp-modal-close" onclick="spCloseModal()">✕</button>
+      </div>
+      <div class="sp-modal-body">
+        <div id="sp-modal-error" class="error-msg"></div>
+        <form id="sp-form" onsubmit="return false">
+          <div class="field">
+            <label>📱 Platform</label>
+            <select id="sp-f-platform">
+              <option value="">Select platform…</option>
+              <option value="INSTAGRAM">Instagram</option>
+              <option value="YOUTUBE">YouTube</option>
+              <option value="TELEGRAM">Telegram</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>🏢 Brand</label>
+            <select id="sp-f-brand">
+              <option value="">Select brand…</option>
+              <option value="1">OPO Broker</option>
+              <option value="2">ForFX Prop Firm</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>✏️ Title</label>
+            <input type="text" id="sp-f-title" placeholder="Post title or caption headline" />
+          </div>
+          <div class="field">
+            <label>📝 Content</label>
+            <textarea id="sp-f-content" placeholder="Full post copy or description…" rows="3"></textarea>
+          </div>
+          <div class="field">
+            <label>📅 Scheduled At</label>
+            <input type="datetime-local" id="sp-f-scheduled" />
+          </div>
+          <div class="field">
+            <label>🏷️ Status</label>
+            <select id="sp-f-status">
+              <option value="DRAFT">Draft</option>
+              <option value="SCHEDULED">Scheduled</option>
+              <option value="PUBLISHED">Published</option>
+              <option value="ARCHIVED">Archived</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="sp-modal-footer">
+        <button class="sp-btn-cancel" onclick="spCloseModal()">Cancel</button>
+        <button class="btn-primary" id="sp-submit-btn" onclick="spSubmit()">Save Post</button>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /dashScreen -->
 
 <script src="script.js"></script>

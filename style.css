@@ -923,3 +923,130 @@
       .cal-grid { grid-template-columns: repeat(2,1fr); }
       .brand-page-stats { display: none; }
     }
+
+    /* ══════════════════════════════════════════════════════
+       SOCIAL POSTS PAGE
+    ══════════════════════════════════════════════════════ */
+
+    /* textarea matches input styling */
+    .field textarea {
+      width: 100%; padding: 12px 14px;
+      border: 1.5px solid var(--border); border-radius: var(--r-input, 10px);
+      font-family: inherit; font-size: 14px; color: var(--text);
+      background: var(--white); outline: none; resize: vertical;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .field textarea:focus { border-color: var(--opo); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+
+    /* Table */
+    .sp-table-wrap { overflow-x: auto; }
+    .sp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .sp-table th {
+      text-align: left; padding: 10px 14px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px;
+      color: var(--muted); border-bottom: 1.5px solid var(--border); white-space: nowrap;
+    }
+    .sp-table td {
+      padding: 13px 14px; border-bottom: 1px solid var(--border);
+      color: var(--text); vertical-align: middle;
+    }
+    .sp-table tr:last-child td { border-bottom: none; }
+    .sp-table tr:hover td { background: rgba(37,99,235,.03); }
+    .sp-table .sp-col-title {
+      max-width: 220px; overflow: hidden; text-overflow: ellipsis;
+      white-space: nowrap; font-weight: 600;
+    }
+
+    /* Status badges */
+    .sp-status {
+      padding: 3px 10px; border-radius: 50px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+      display: inline-block;
+    }
+    .sp-status-draft     { background: #f1f5f9; color: #64748b; }
+    .sp-status-scheduled { background: #eff6ff; color: #2563eb; }
+    .sp-status-published { background: #f0fdf4; color: #166534; }
+    .sp-status-archived  { background: #fff7ed; color: #9a3412; }
+
+    /* Action buttons */
+    .sp-btn-edit, .sp-btn-del {
+      padding: 4px 12px; border-radius: 8px;
+      font-size: 11.5px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: all .18s;
+    }
+    .sp-btn-edit { border: 1.5px solid var(--opo); color: var(--opo); background: transparent; margin-right: 6px; }
+    .sp-btn-edit:hover { background: var(--opo); color: #fff; }
+    .sp-btn-del  { border: 1.5px solid var(--red); color: var(--red); background: transparent; }
+    .sp-btn-del:hover  { background: var(--red);  color: #fff; }
+
+    /* Empty / loading states */
+    .sp-empty, .sp-loading {
+      text-align: center; padding: 48px 24px;
+      color: var(--muted); font-size: 13.5px;
+    }
+
+    /* Page banner */
+    .sp-banner {
+      border-radius: 10px; padding: 11px 16px; font-size: 13px;
+      margin: 16px 24px 0; display: none;
+    }
+    .sp-banner-error   { background: #fff1f2; border: 1px solid #fecdd3; color: var(--red); }
+    .sp-banner-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+
+    /* Modal overlay */
+    .sp-modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(15,23,42,.55); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .sp-modal-overlay.open { display: flex; }
+    .sp-modal {
+      background: var(--white); border-radius: var(--r-card);
+      box-shadow: 0 24px 64px rgba(15,23,42,.2);
+      width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+    }
+    .sp-modal-header {
+      padding: 22px 26px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .sp-modal-title { font-size: 16px; font-weight: 700; color: var(--text); }
+    .sp-modal-close {
+      width: 32px; height: 32px; border-radius: 8px;
+      border: none; background: transparent;
+      font-size: 16px; line-height: 1; cursor: pointer; color: var(--muted);
+      transition: background .18s;
+    }
+    .sp-modal-close:hover { background: rgba(148,163,184,.15); }
+    .sp-modal-body   { padding: 22px 26px 8px; }
+    .sp-modal-footer { padding: 16px 26px 22px; display: flex; gap: 12px; }
+    .sp-modal-footer .btn-primary { margin-top: 0; flex: 1; padding: 13px; }
+    .sp-btn-cancel {
+      flex: 1; padding: 13px; background: transparent;
+      border: 1.5px solid var(--border); border-radius: var(--r-btn);
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      color: var(--muted); cursor: pointer; transition: all .2s;
+    }
+    .sp-btn-cancel:hover { border-color: var(--text); color: var(--text); }
+
+    /* Dark mode — social posts */
+    [data-theme="dark"] .field textarea {
+      background: #1a1a2e; border-color: rgba(255,255,255,.1); color: #E8EAED;
+    }
+    [data-theme="dark"] .field textarea:focus { border-color: var(--opo); box-shadow: 0 0 0 3px rgba(37,99,235,.2); }
+    [data-theme="dark"] .sp-table th { color: #9CA3AF; border-color: rgba(255,255,255,.08); }
+    [data-theme="dark"] .sp-table td { color: #E8EAED; border-color: rgba(255,255,255,.06); }
+    [data-theme="dark"] .sp-table tr:hover td { background: rgba(255,255,255,.04); }
+    [data-theme="dark"] .sp-status-draft     { background: rgba(100,116,139,.2);  color: #94a3b8; }
+    [data-theme="dark"] .sp-status-scheduled { background: rgba(37,99,235,.18);   color: #60a5fa; }
+    [data-theme="dark"] .sp-status-published { background: rgba(16,185,129,.14);  color: #34d399; }
+    [data-theme="dark"] .sp-status-archived  { background: rgba(245,158,11,.12);  color: #fbbf24; }
+    [data-theme="dark"] .sp-banner-error   { background: #2a1018; border-color: rgba(244,63,94,.3); color: #fb7185; }
+    [data-theme="dark"] .sp-banner-success { background: #052e16; border-color: rgba(34,197,94,.3); color: #4ade80; }
+    [data-theme="dark"] .sp-modal { background: #131320; }
+    [data-theme="dark"] .sp-modal-header { border-color: rgba(255,255,255,.07); }
+    [data-theme="dark"] .sp-modal-title  { color: #E8EAED; }
+    [data-theme="dark"] .sp-modal-close  { color: #9CA3AF; }
+    [data-theme="dark"] .sp-modal-close:hover { background: rgba(255,255,255,.08); }
+    [data-theme="dark"] .sp-btn-cancel   { border-color: rgba(255,255,255,.12); color: #9CA3AF; }
+    [data-theme="dark"] .sp-btn-cancel:hover { border-color: #E8EAED; color: #E8EAED; }
