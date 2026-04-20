@@ -2,11 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
-const authRouter = require('./routes/auth');
-const brandsRouter = require('./routes/brands');
-const postsRouter = require('./routes/posts');
-const analyticsRouter = require('./routes/analytics');
-const campaignsRouter = require('./routes/campaigns');
+const authRouter        = require('./routes/auth');
+const brandsRouter      = require('./routes/brands');
+const postsRouter       = require('./routes/posts');
+const analyticsRouter   = require('./routes/analytics');
+const campaignsRouter   = require('./routes/campaigns');
+const socialPostsRouter = require('./routes/socialPosts');
 
 const app = express();
 
@@ -18,12 +19,13 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/auth', authRouter);
 app.use('/api/brands', brandsRouter);
 app.use('/api/posts', postsRouter);
-app.use('/api/analytics', analyticsRouter);
-app.use('/api/campaigns', campaignsRouter);
+app.use('/api/analytics',    analyticsRouter);
+app.use('/api/campaigns',    campaignsRouter);
+app.use('/api/social-posts', socialPostsRouter);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: err.message });
+  res.status(500).json({ success: false, data: null, message: 'Database error, please try again' });
 });
 
 module.exports = app;
